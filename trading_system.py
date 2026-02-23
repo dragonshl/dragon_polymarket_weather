@@ -485,74 +485,64 @@ class MLEngine:
     
     def predict(self, features: Dict) -> Tuple[str, float]:
         """
-        ML预测信号
+        ML预测信号 - 优化参数
         
-        基于特征进行加权投票,生成交易信号
-        
-        Args:
-            features: 特征字典
-            
-        Returns:
-            Tuple[str, float]: (信号, 置信度)
-            信号: 'BUY', 'SELL', 'HOLD'
-            置信度: 0.0 - 1.0
+        降低阈值以产生更多交易信号
         """
         
-        # ==================
         # 1. 订单流信号
-        # ==================
         of_score = 0
         if 'delta' in features and 'imbalance' in features:
             if features.get('delta', 0) > 0:
-                of_score += 0.3
-            if features.get('imbalance', 1) > 1.2:
-                of_score += 0.3
+                of_score += 0.25
+            if features.get('imbalance', 1) > 1.1:
+                of_score += 0.25
             if features.get('cvd', 0) > 0:
                 of_score += 0.2
         scores = {'orderflow': of_score * self.weights['orderflow']}
         
         # ==================
         # 2. RSI信号
-        # ==================
+        # 降低阈值
         rsi_score = 0
         if 'rsi' in features:
             rsi = features['rsi']
-            if rsi < 30:
-                rsi_score = 0.8
-            elif rsi < 40:
-                rsi_score = 0.5
-            elif rsi > 70:
-                rsi_score = -0.8
-            elif rsi > 60:
-                rsi_score = -0.5
+            if rsi < 35:  # 原来是30
+                rsi_score = 0.7
+            elif rsi < 45:  # 原来是40
+                rsi_score = 0.4
+            elif rsi > 65:  # 原来是70
+                rsi_score = -0.7
+            elif rsi > 55:  # 原来是60
+                rsi_score = -0.4
         scores['rsi'] = rsi_score * self.weights['rsi']
         
         # ==================
         # 3. 布林带信号
-        # ==================
+        # 降低阈值
         bb_score = 0
         if 'bb_position' in features:
             bb = features['bb_position']
-            if bb < 0.2:
-                bb_score = 0.7
-            elif bb > 0.8:
-                bb_score = -0.7
+            if bb < 0.25:  # 原来是0.2
+                bb_score = 0.6
+            elif bb > 0.75:  # 原来是0.8
+                bb_score = -0.6
         scores['bollinger'] = bb_score * self.weights['bollinger']
         
         # ==================
         # 4. 动量信号
-        # ==================
+        # 降低阈值
         mom_score = 0
         if 'momentum_10' in features and 'momentum_20' in features:
             mom = features['momentum_10'] * 0.6 + features['momentum_20'] * 0.4
-            if mom > 0.05:
-                mom_score = 0.7
-            elif mom > 0.02:
-                mom_score = 0.4
-            elif mom < -0.05:
-                mom_score = -0.7
-            elif mom < -0.02:
-                mom_score = -0.4
+            if mom > 0.03:  # 原来是0.05
+                mom_score = 0.6
+            elif mom > 0.01:  # 原来是0.02
+                mom_score = 0.3
+            elif mom < -0.03:  # 原来是-0.05
+                mom_score = -0.6
+            elif mom < -0.01:  # 原来是-0.02
+                mom_score = -0.3
         scores['momentum'] = mom_score * self.weights['momentum']
         
         # ==================
