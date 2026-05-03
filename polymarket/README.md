@@ -160,3 +160,43 @@ browser-use wraps an AI agent that drives a real Chrome browser:
 ## CI/CD
 
 GitHub Actions runs on every push/PR to main branch.
+
+### Pipeline Stages
+
+```
+lint → unit-test → e2e-test (main only) → build → deploy (manual)
+```
+
+- **lint**: flake8 + black checks (all branches)
+- **unit-test**: pytest tests/ --ignore=tests/e2e (all branches)
+- **e2e-test**: browser-use tests in headless Chrome (main push only, not PRs)
+- **build**: create zip artifact (PRs + main push)
+- **deploy**: manual trigger via `workflow_dispatch`
+
+### Required GitHub Secrets
+
+Set these in **Settings → Secrets and variables → Actions**:
+
+| Secret | Description |
+|---|---|
+| `AVWX_API_KEY` | AVWX METAR weather API key |
+| `POLYMARKET_API_KEY` | Polymarket CLOB API key |
+| `POLYMARKET_PRIVATE_KEY` | Private key for order signing |
+| `OPENAI_API_KEY` | OpenAI key (E2E browser tests only) |
+
+```bash
+# Via GitHub CLI
+gh secret set AVWX_API_KEY --body "your-key"
+gh secret set POLYMARKET_API_KEY --body "your-key"
+gh secret set POLYMARKET_PRIVATE_KEY --body "your-key"
+gh secret set OPENAI_API_KEY --body "sk-..."
+```
+
+### Manual Deployment
+
+1. Go to **Actions** tab → **CI/CD Pipeline**
+2. Click **Run workflow** → select `main` branch
+3. Choose environment (`production` or `staging`)
+4. Click **Run workflow**
+
+See [.github/DEPLOY.md](.github/DEPLOY.md) for full deployment guide, rollback steps, and PMXT relay instructions.
