@@ -80,6 +80,28 @@ The GraphQL query filters by:
 - Status: `open`
 - Then applies `WEATHER_KEYWORDS` for secondary filtering
 
+## Risk Control
+
+The trading system implements multiple layers of risk control:
+
+### Position Sizing
+- **Light period (00:00-07:00)**: YES < 0.10 → 1 USDC, YES < 0.20 → 0.5 USDC
+- **Aggressive period (07:00-12:00)**: YES < 0.10 → 10 USDC, YES < 0.20 → 5 USDC, YES < 0.25 → 1 USDC
+
+### Risk Limits
+- `MAX_DAILY_LOSS = 50.0` USDC - Daily loss limit stops all trading
+- `MAX_POSITIONS = 5` - Maximum number of concurrent positions
+- `MAX_SINGLE_TRADE = 10.0` USDC - Maximum single trade size
+
+### Order Protection
+- `RETRY_ATTEMPTS = 3` - Retry failed orders 3 times
+- `RETRY_DELAY = 2` seconds - Delay between retries
+- `validate_order_on_chain()` - Verifies order is confirmed on-chain
+
+### Time-Based Controls
+- No trading after 12:00 (noon)
+- Position sizes adjusted based on time of day
+
 ## CI/CD
 
 GitHub Actions runs on every push/PR to main branch.
