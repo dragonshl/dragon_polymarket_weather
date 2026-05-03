@@ -1,0 +1,6 @@
+# Polymarket Weather Trading System
+py-clob-client>=0.34.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+pytest>=8.0.0
+flake8>=7.0.0
