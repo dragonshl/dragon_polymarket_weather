@@ -44,6 +44,23 @@ python polymarket_weather_trader_final.py
 pytest tests/ -v
 ```
 
+## GraphQL Dynamic Market Discovery
+
+The scanner uses **GraphQL** (`https://clob.polymarket.com/graphql`) to dynamically discover weather markets, with automatic fallback to REST API.
+
+```python
+from polymarket_weather_scanner_final import fetch_weather_markets_via_graphql
+
+# Returns dict: {"markets": [...]} or {} on failure
+gql_result = fetch_weather_markets_via_graphql()
+```
+
+The GraphQL query filters by:
+- Keywords: temperature, rain, snow, weather, celsius
+- Chinese cities: 上海, 北京, 深圳, 成都, 武汉, 重庆
+- Status: `open`
+- Then applies `WEATHER_KEYWORDS` for secondary filtering
+
 ## CI/CD
 
 GitHub Actions runs on every push/PR to main branch.
