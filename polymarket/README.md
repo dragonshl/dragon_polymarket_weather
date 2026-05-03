@@ -42,7 +42,14 @@ python polymarket_weather_trader_final.py
 ## Testing
 
 ```bash
+# Unit tests
 pytest tests/ -v
+
+# E2E browser tests (requires browser-use + langchain-openai + OpenAI API key)
+cd polymarket
+.venv\Scripts\activate
+pip install browser-use langchain-openai
+pytest tests/e2e/ -v
 ```
 
 ## Data Sources
@@ -100,7 +107,55 @@ The trading system implements multiple layers of risk control:
 
 ### Time-Based Controls
 - No trading after 12:00 (noon)
-- Position sizes adjusted based on time of day
+- Position sizes adjusted based of time of day
+
+## E2E Testing (Browser)
+
+The E2E tests use **browser-use** — an AI-driven browser automation library — to run real browser interactions against Polymarket.
+
+### Setup
+
+```bash
+# Install browser-use and AI dependencies in the .venv
+cd polymarket
+.venv\Scripts\activate
+pip install browser-use langchain-openai
+
+# Set your OpenAI API key for AI-driven browser agent
+# Add to .env:
+# OPENAI_API_KEY=sk-...
+```
+
+### Run
+
+```bash
+# Run all E2E tests (will skip if API key not set)
+pytest tests/e2e/ -v
+
+# Run in headed mode (see browser window)
+HEADLESS=false pytest tests/e2e/ -v
+
+# Run only the full workflow test
+pytest tests/e2e/test_weather_trading_flow.py::TestFullWorkflowE2E -v
+```
+
+### How it works
+
+browser-use wraps an AI agent that drives a real Chrome browser:
+- `Agent(task=..., llm=ChatOpenAI(...), browser_profile=...)`
+- The agent receives natural language instructions and executes browser actions
+- Headless mode (`HEADLESS=true`) runs without a visible window (CI/default)
+- Headed mode (`HEADLESS=false`) shows the browser for debugging
+
+### Test classes
+
+| Class | What it tests |
+|---|---|
+| `TestBrowserUseSetup` | browser-use + Chrome + langchain-openai installed |
+| `TestBrowserUseImports` | All browser-use imports work |
+| `TestMarketScannerE2E` | Open Polymarket, search weather markets, verify list non-empty |
+| `TestPriceLoadsE2E` | Open a weather market, verify YES/NO prices load and are in [0,1] |
+| `TestFullWorkflowE2E` | Run scanner → opportunities.json → browser-verify Polymarket loads |
 
 ## CI/CD
 
