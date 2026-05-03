@@ -7,6 +7,7 @@
 ```
 Step 1: Weather Data Collection (weather_temps_hourly.py)
   → Fetch 6 cities' daily high temperature forecast
+  → Dual-source: AVWX METAR (primary) + Open-Meteo (fallback)
 
 Step 2: Market Scanner (polymarket_weather_scanner_final.py)
   → Scan Polymarket CLOB API for weather markets
@@ -43,6 +44,24 @@ python polymarket_weather_trader_final.py
 ```bash
 pytest tests/ -v
 ```
+
+## Data Sources
+
+`weather_temps_hourly.py` uses a **dual-source** approach for reliability:
+
+1. **AVWX METAR** (primary): Real-time airport weather data with ±0.1°C precision
+2. **Open-Meteo** (fallback): Forecast high temperature when AVWX is unavailable
+3. **wttr.in** (last resort): Legacy forecast data if both fail
+
+AVWX API key is read from environment variable `AVWX_API_KEY`.
+
+City airport codes used:
+- 上海 → ZSSS (浦东)
+- 北京 → ZBAA (首都)
+- 深圳 → ZGSZ (宝安)
+- 成都 → ZUUU (双流)
+- 武汉 → ZHWH (天河)
+- 重庆 → ZUCK (江北)
 
 ## GraphQL Dynamic Market Discovery
 
